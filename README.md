@@ -16,6 +16,6 @@ There are some more args that it accepts (they're the same as ```http.server```)
 There are a few tests here, which compares the templated output of some prepared pages with the output we expect.
 These are under ```tests```, and you can run them as follows.
 ```
-$   ./phpy 9000
-$   ./run_tests
+$   ./phpy <port>
+$   ./run_tests <port>
 ```

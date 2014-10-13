@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import http.server, argparse
-from phpy_buffer import process
+from capture import process
 
 # A simple HTTP server that serves templated Python code
 # a la PHP - embedded code blocks, where `print`ing 

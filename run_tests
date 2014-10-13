@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 
+TESTS_DIR="tests"
+
+if [ $1 ];
+then
+    PHPY_PORT=$1
+else
+    PHPY_PORT=9000
+fi
+
 # For each test inputfile, verify that it matches the expected output
-for test_in in tests/in/*;
+for test_in in $TESTS_DIR/in/*;
 do
     test_in="$(basename $test_in)"
-    curl -s "localhost:9000/tests/in/$test_in" > "tests/result/$test_in"
-    if [ ! "$(diff "tests/expect/$test_in" "tests/result/$test_in")" ];
+    curl -s "localhost:$PHPY_PORT/$TESTS_DIR/in/$test_in" > "$TESTS_DIR/result/$test_in"
+    if [ ! "$(diff "$TESTS_DIR/expect/$test_in" "$TESTS_DIR/result/$test_in")" ];
     then
         echo "Test $test_in Passed";
     else
