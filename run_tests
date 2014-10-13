@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# For each test inputfile, verify that it matches the expected output
+for test_in in tests/in/*;
+do
+    test_in="$(basename $test_in)"
+    curl -s "localhost:9000/tests/in/$test_in" > "tests/result/$test_in"
+    if [ ! "$(diff "tests/expect/$test_in" "tests/result/$test_in")" ];
+    then
+        echo "Test $test_in Passed";
+    else
+        echo "Test $test_in Failed"
+    fi
+done

@@ -1,0 +1,6 @@
+first line
+<? a = 3 
+print(a) ?>
+second line
+<? a = 45 
+print(a) ?>

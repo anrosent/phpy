@@ -5,12 +5,11 @@
 mystring = "a string"
 def f(x):
     return x + " and a function"
-print(mystring + "\n")
+print(mystring + '\n')
 print(f(mystring))
 ?></p>
 <p><?
-print(mystring + ' again\n')
-import sys
-print(sys.version) ?></p>
+print(mystring + ' again')
+?></p>
 </body>
 </html>

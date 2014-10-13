@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+import http.server, argparse
+from phpy_buffer import process
+
+# A simple HTTP server that serves templated Python code
+# a la PHP - embedded code blocks, where `print`ing 
+# sends output into the space occupied by that block
+class PhPyHttpServer(http.server.SimpleHTTPRequestHandler):
+
+    # Save these when we interpret file to send proper header
+    # so we don't have to reprocess file to send content
+    file_len = 0
+    content = None
+
+    # Override to preprocess file through PHPy interpreter
+    def copyfile(self, source, outputfile):
+        outputfile.write(self.content.encode('utf-8'))
+
+    # Don't let it send the file length per os.stat()
+    def send_header(self, keyword, value):
+        if keyword == 'Content-Length':
+            value = self.file_len
+
+        super(PhPyHttpServer, self).send_header(keyword, value)
+
+    # Interpret file before we send headers so we know the length
+    def send_head(self):
+        self.content = process(open(self.translate_path(self.path), 'r').read())
+        self.file_len = len(self.content)
+        return super(PhPyHttpServer, self).send_head()
+
+
+# Runs PHPy server locally on the given port -- same args as http.server
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cgi', action='store_true',
+                            help='Run as CGI Server')
+    parser.add_argument('--bind', '-b', default='', metavar='ADDRESS',
+                             help='Specify alternate bind address '
+                              '[default: all interfaces]')
+    parser.add_argument('port', action='store',
+                             default=8000, type=int,
+                             nargs='?',
+                             help='Specify alternate port [default: 8000]')
+    args = parser.parse_args()
+
+    http.server.test(HandlerClass=PhPyHttpServer, port=args.port, bind=args.bind)
