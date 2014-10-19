@@ -1,0 +1,11 @@
+<? import json ?>
+<? 
+
+data = json.loads(_POST)
+names = data.get('names', [])
+
+?>
+
+<html>
+	<p> Hello, <? print( ' and '.join(names) ) ?>! </p>
+</html>

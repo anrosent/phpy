@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re, sys, ast, fileinput
+from collections import ChainMap
 
 #Delimiters of code elements
 code_start = "<?"
@@ -13,10 +14,13 @@ find_code = re.compile("%s(.*?)%s"%(re.escape(code_start), re.escape(code_stop))
 class CaptureBuffer():
 
     # Init with dict to save state between code blocks and self to capture printed output
-    def __init__(self):
+    def __init__(self, env={}):
         self.string = ''
         self.capture = ''
-        self.var_dict = {'output_buffer':self}
+        
+        # add ref to self in execution scope
+        env['output_buffer'] = self
+        self.var_dict = env
         
     # Adds new code block into buffer
     def add(self, string):
@@ -55,12 +59,16 @@ class CaptureBuffer():
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
+                print("Methods: %s" % dir(node.func))
 
-                # If this node is a call to print(), set the output file to this buffer
-                if node.func.id == 'print':
-                    node.keywords.extend(self.get_print_keywords())
+                # Method calls don't have this attr
+                if hasattr(node.func, 'id'):
+                    # If this node is a call to print(), set the output file to this buffer
+                    if node.func.id == 'print':
+                        node.keywords.extend(self.get_print_keywords())
 
         # Execute code block with same local state as other code blocks
+        print("Execing w/ vars: %s"%self.var_dict)
         exec(compile(tree, '<string>', 'exec'), self.var_dict)
 
         # Reset buffer
@@ -71,10 +79,10 @@ class CaptureBuffer():
     
     
 #For each match, replace it with its output    
-def process(string):
+def process(string, env={}):
     
     # Init a buffer
-    capture_buf = CaptureBuffer()    
+    capture_buf = CaptureBuffer(env=env)    
 
     # Find and replace all code blocks with their output
     #

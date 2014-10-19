@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import http.server, argparse
+import http.server, http.cookies, cgi, argparse
 from capture import process
+from collections import defaultdict
 
 # A simple HTTP server that serves templated Python code
 # a la PHP - embedded code blocks, where `print`ing 
@@ -11,6 +12,9 @@ class PhPyHttpServer(http.server.SimpleHTTPRequestHandler):
     # so we don't have to reprocess file to send content
     file_len = 0
     content = None
+    POST    = '' 
+    GET     = defaultdict(str)
+    COOKIES = defaultdict(str)
 
     # Override to preprocess file through PHPy interpreter
     def copyfile(self, source, outputfile):
@@ -25,9 +29,60 @@ class PhPyHttpServer(http.server.SimpleHTTPRequestHandler):
 
     # Interpret file before we send headers so we know the length
     def send_head(self):
-        self.content = process(open(self.translate_path(self.path), 'r').read())
+
+        #TODO: don't circumvent 404 handling in http.server.SimpleHTTPServer
+        self.content = process(open(self.translate_path(self.path), 'r').read(),  {\
+                '_POST' : self.POST,
+                '_GET'  : self.GET,
+                '_COOKIES' : self.COOKIES,
+        })
         self.file_len = len(self.content)
         return super(PhPyHttpServer, self).send_head()
+
+    # Override do_GET method of SimpleHttpServer to set env vars
+    def do_GET(self):
+        self.set_envs()
+        super(PhPyHttpServer, self).do_GET()
+
+    # No difference between GET and POST for processing
+    def do_POST(self):
+        self.do_GET()
+
+    def set_envs(self):
+
+        # GET query params
+        query_ix = self.path.rfind('?')
+        if query_ix >= 0:
+            query_s = self.path[query_ix+1:]
+        else:
+            query_s = ''
+    
+        self.GET = cgi.parse_qs(query_s)
+        
+        # Get POST data
+        # copped this from http.server.CGIHTTPRequestHandler.run_cgi
+        try:
+            data_len = int(self.headers.get('content-length'))
+        except (TypeError, ValueError):
+            data_len = 0
+
+        if data_len > 0 and self.command.lower():
+            data = self.rfile.read(data_len).decode('utf-8')
+        else:
+            data = ''
+
+        # TODO: select loop to clear rfile data
+        self.POST = data
+
+        # Get cookies from header
+        cookie_str = ', '.join(self.headers.get_all('cookie', []))
+
+        # Create cookie and parse string
+        cookie = http.cookies.SimpleCookie()
+        cookie.load(cookie_str)
+
+        # Set to var for interpreted script
+        self.COOKIES = cookie
 
 
 # Runs PHPy server locally on the given port -- same args as http.server
