@@ -84,3 +84,7 @@ These are under ```tests```, and you can run them as follows.
 $   ./phpy <port>
 $   ./run_tests <port>
 ```
+
+## TODO
+As usual, several TODOs here.
+ - Hook into ```SimpleHTTPServer```'s HTTP status code checks, e.g. 404 if file isn't on disk. In overriding some handlers I coded around this path, so server responds with nothing whenever error is hit, rather than HTTP error code. 
