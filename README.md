@@ -88,3 +88,7 @@ $   ./run_tests <port>
 ## TODO
 As usual, several TODOs here.
  - Hook into ```SimpleHTTPServer```'s HTTP status code checks, e.g. 404 if file isn't on disk. In overriding some handlers I coded around this path, so server responds with nothing whenever error is hit, rather than HTTP error code. 
+ - Figure out semantics of whitespace around silent code blocks on their own line - looks ugly if there's a lingering newline from each of them.
+ - Python's semantic whitespace causes some friction in embedding code in the blocks over multiple lines. Maybe some way to reindent so we can pull multiline code blocks inside by a tab for readability. 
+ - More official module loading system - add ```modules``` directory to ```sys.path``` in execution scope
+ - Some way of specifying templated assets directory so we can restrict served files to a given directory
