@@ -40,7 +40,7 @@ Here's an example PHPy template:
 ```
 The template is rendered to greet us and our friends when we access the page!
 ```
-$	curl 'localhost:8000/examples/vartest.html?name=Anson&name=Friend'
+$	curl 'localhost:8000/examples/hello.html?name=Anson&name=Friend'
 
 <html>
     <p> Hello, Anson and Friend </p>
